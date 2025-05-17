@@ -1,11 +1,13 @@
-from flask import Flask, redirect, url_for, session
+from flask import Flask, redirect, url_for, session, jsonify, request, send_from_directory
 from authlib.integrations.flask_client import OAuth
 from authlib.common.security import generate_token
 import os
+import requests
+from flask_cors import CORS
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-
+CORS(app)
 
 oauth = OAuth(app)
 
@@ -24,6 +26,37 @@ oauth.register(
     device_authorization_endpoint="http://dex:5556/device/code",
     client_kwargs={'scope': 'openid email profile'}
 )
+
+
+# NYT API routes
+@app.route('/api/key')
+def get_key():
+#returning api key for frontend
+    return jsonify({'apiKey': os.getenv('NYT_API_KEY')})
+
+@app.route('/api/news')
+def get_news():
+
+    nyt_api_key = os.getenv('NYT_API_KEY')
+    if not nyt_api_key:
+        return jsonify({'error': 'API key missing'}), 500
+
+    # Example: Top Stories with Sacramento/Davis keywords
+    params = {
+        'q': '("Sacramento" OR "Davis" OR "Yolo County")',  # location fixing
+        'api-key': nyt_api_key,
+        'sort': 'newest',            # want newest
+        'page': request.args.get('page', '1')
+    }
+    
+    try:
+        response = requests.get(
+            'https://api.nytimes.com/svc/search/v2/articlesearch.json',
+            params=params
+        )
+        return jsonify(response.json())
+    except requests.exceptions.RequestException as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/')
 def home():
