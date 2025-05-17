@@ -23,5 +23,4 @@ COPY backend/ .
 COPY --from=frontend /frontend/dist /app/static
 COPY --from=frontend /frontend/dist/index.html /app/templates/index.html
 
-ENV PORT=8000
 CMD ["python", "app.py"]
