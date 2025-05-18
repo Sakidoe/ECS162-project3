@@ -7,11 +7,11 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-CORS(app)
+
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+
 
 oauth = OAuth(app)
-
-nonce = generate_token()
 
 
 oauth.register(
@@ -57,6 +57,15 @@ def get_news():
         return jsonify(response.json())
     except requests.exceptions.RequestException as e:
         return jsonify({'error': str(e)}), 500
+    
+# Getting User info to use in Account/log in code   
+@app.route('/api/user')
+def get_user():
+    user = session.get('user')
+    if user:
+        return jsonify({'email': user['email']})
+    return jsonify({'error': 'Not logged in'}), 401
+
 
 @app.route('/')
 def home():
@@ -67,6 +76,7 @@ def home():
 
 @app.route('/login')
 def login():
+    nonce = generate_token() #only generate token when trying to login, prevents mismatching state errors
     session['nonce'] = nonce
     redirect_uri = 'http://localhost:8000/authorize'
     return oauth.flask_app.authorize_redirect(redirect_uri, nonce=nonce)
@@ -78,12 +88,12 @@ def authorize():
 
     user_info = oauth.flask_app.parse_id_token(token, nonce=nonce)  # or use .get('userinfo').json()
     session['user'] = user_info
-    return redirect('/')
+    return redirect('http://localhost:5173/') # redirect back into home page with updated UI
 
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect('/')
+    return redirect('http://localhost:5173/')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8000)
