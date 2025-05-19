@@ -1,0 +1,30 @@
+Names: Richard Huang & Lorenzo Fernandes
+
+- What AI tool did you use?
+
+For this project, we used ChatGPT to mainly learn more about debugging and different ways we could implement unit tests that cover more code,
+as well as using asking it a lot of clarifying questions, and debugging merging mongodb code with api code. It was also very helpful with traversing
+through the issues we faced while creating the commenting system.
+
+- How did you use it? What kind of questions did you ask? (include links to your conversation if applicable)
+
+For this project, one of the hardest things to understand was the commenting system. From finding how to use MongoCompass to how to
+debugging flask routes, we used it in a very theoretical sense as these were all new languages and systems for us.
+Specifically it helped us get this json structure:
+return jsonify([
+        {
+            "_id": str(c["_id"]),
+            "username": c["username"],
+            "content": c["content"],
+            # This gets the parent ID, for some reason c["parent_id"] doesnt work
+            "parent_id": str(c["parent_id"]) if c.get("parent_id") else None,
+            "role": c.get("role", "user")
+        }
+        for c in comment_list
+    ])
+Which became instrumental in layering comments and it's replies. The parent_id was very buggy when used just like username
+- How much did it help you? How helpful and accurate was it?
+
+We asked it a lot of debugging questions, which cut down our debugging time by a lot. It was also very
+useful for finding the solution to very peculiar bugs that had non-descriptive errors in them.
+That was the most significant help it was able to give us.

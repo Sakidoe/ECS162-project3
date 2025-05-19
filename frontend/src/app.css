@@ -2,7 +2,7 @@
 
 .nyt-title{
   font-size: 32pt;
-  font-family: 'Libre Baskerville', sans-serif;
+  font-family: 'Chomsky', sans-serif;
   font-weight:normal;
   text-align: center;
   margin: 0 auto;
@@ -55,7 +55,6 @@
   height: 100%;
   background: white;
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
-  transition: right 0.3s ease;
   z-index: 200;
 }
 
@@ -69,11 +68,11 @@
 
 .logout-btn {
   position: absolute;
-  bottom: 1rem;
+  bottom: 5rem;
   left: 2rem;
   color: black;
   text-decoration: underline;
-  font-size: 15pt;
+  font-size: 10pt;
 }
 
 .overlay {
@@ -145,16 +144,6 @@
   position: relative;
   min-height: 600px;
   }
-  
-  hr {
-    border: none;
-    border-radius: 10px;
-    height: 4px;
-    background-color: black;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    margin: 40px 50px;
-  }
-
   .tl-panel,
   .tm-panel,
   .tr-panel,
@@ -357,3 +346,42 @@
     }
   }
   
+  .login-button {
+    display: inline-flex;
+    align-items: center;
+    font-weight: bold;
+    color: black;
+    text-decoration: none;
+    border: none;
+    background: none;
+    font-size: 1rem;
+    cursor: pointer;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  
+  .login-caret {
+    margin-left: 4px;
+    font-size: 0.8rem;
+    color: #555;
+  }
+  
+  .account-button {
+  display: inline-flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: black;
+}
+
+.account-label {
+  font-weight: bold;
+}
+
+.account-caret {
+  margin-left: 4px;
+  font-size: 0.8rem;
+  color: #555;
+}

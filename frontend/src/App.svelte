@@ -182,19 +182,28 @@
   <div class="date-time">{currentDate}</div>
   <h1 class="nyt-title">The New&nbsp;York&nbsp;Times</h1>
   {#if userEmail}
-    <button class="account-button" on:click={toggleSidebar}>Account</button>
+    <button class="account-button" on:click={toggleSidebar}>
+      <span class="account-label">Account</span>
+      <span class="account-caret">⌄</span>
+    </button>
     {#if showSidebar}
-      <div class="sidebar sidebar-open">
-        <div class="sidebar-content">
-          <h2>{getGreeting()},</h2>
-          <p>{userEmail}</p>
-          <button class="logout-btn" on:click={logout}>Log out</button>
-        </div>
-        <button class="overlay" on:click={toggleSidebar}></button>
+    <div class="sidebar sidebar-open">
+      <div class="sidebar-header">
+        <strong>{userEmail}</strong>
       </div>
+      <hr />
+      <div class="sidebar-content">
+        <h2 class="greeting">{getGreeting()}.</h2>
+        <button class="logout-btn" on:click={logout}>Log out</button>
+      </div>
+      <button class="overlay" on:click={toggleSidebar}></button>
+    </div>
     {/if}
   {:else}
-    <a href="http://localhost:8000/login"><button>Log in</button></a>
+    <a href="http://localhost:8000/login" class="login-button">
+      <span class="login-text">Log In</span>
+      <span class="login-caret">⌄</span>
+    </a>
   {/if}
 </header>
 

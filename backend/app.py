@@ -1,4 +1,4 @@
-# app.py
+# Imports
 from flask import Flask, redirect, url_for, session, jsonify, request
 from authlib.integrations.flask_client import OAuth
 from authlib.common.security import generate_token
@@ -9,6 +9,7 @@ from pymongo import MongoClient
 from bson import ObjectId
 from datetime import datetime
 
+#Flash Configuration - mostly starter code
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
@@ -27,11 +28,14 @@ oauth.register(
     client_kwargs={'scope': 'openid email profile'}
 )
 
-# MongoDB setup
+# MongoDB Start
 mongo_client = MongoClient("mongodb://root:rootpassword@mongo:27017/?authSource=admin")
 db = mongo_client["mydatabase"]
 comments_collection = db["comments"]
 
+
+#----Routes----
+# Fetches NYT news
 @app.route('/api/news')
 def get_news():
     nyt_api_key = os.getenv('NYT_API_KEY')
@@ -52,6 +56,8 @@ def get_news():
     except requests.exceptions.RequestException as e:
         return jsonify({'error': str(e)}), 500
 
+
+# Returns User, with their role.
 @app.route('/api/user')
 def get_user():
     user = session.get('user')
@@ -62,6 +68,8 @@ def get_user():
         })
     return jsonify({'error': 'Not logged in'}), 401
 
+
+# Comment get request
 @app.route('/api/comments', methods=['GET'])
 def get_comments():
     url = request.args.get('url')
@@ -71,12 +79,15 @@ def get_comments():
             "_id": str(c["_id"]),
             "username": c["username"],
             "content": c["content"],
+            # This gets the parent ID, for some reason c["parent_id"] doesnt work
             "parent_id": str(c["parent_id"]) if c.get("parent_id") else None,
             "role": c.get("role", "user")
         }
         for c in comment_list
     ])
 
+
+# Comment Post req
 @app.route('/api/comments', methods=['POST'])
 def post_comment():
     user = session.get("user")
@@ -96,6 +107,7 @@ def post_comment():
     return jsonify({"id": str(result.inserted_id)})
 
 
+# Comment Deletion function
 @app.route('/api/comments/<comment_id>', methods=['DELETE'])
 def delete_comment(comment_id):
     user = session.get("user")
@@ -104,6 +116,8 @@ def delete_comment(comment_id):
     result = comments_collection.delete_one({"_id": ObjectId(comment_id)})
     return jsonify({"deleted": result.deleted_count}), 200
 
+
+# Comment Editing function (PATCH)
 @app.route('/api/comments/<comment_id>/edit', methods=['PATCH'])
 def edit_comment(comment_id):
     user = session.get("user")
@@ -120,7 +134,9 @@ def edit_comment(comment_id):
         {"$set": {"content": new_content}}
     )
     return jsonify({"message": "Comment updated"}), 200
-# helper function to retrive comment count
+
+
+# Helper function to retrieve comment count
 @app.route('/api/comments/counts', methods=['GET'])
 def get_comment_counts():
     """Returns comment counts for all articles."""
@@ -132,6 +148,7 @@ def get_comment_counts():
     ]
     counts = list(comments_collection.aggregate(pipeline))
     return jsonify({item["_id"]: item["count"] for item in counts})
+
 
 @app.route('/')
 def home():
@@ -153,11 +170,11 @@ def authorize():
     print(session.get("user"))
     return redirect('http://localhost:5173/')
 
+
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('http://localhost:5173/')
-
 
 
 @app.route('/api/debug-session')
@@ -165,5 +182,6 @@ def debug_session():
     return jsonify(dict(session))
 
 
+# Run main
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8000)
