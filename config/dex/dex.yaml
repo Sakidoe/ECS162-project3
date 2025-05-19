@@ -41,3 +41,9 @@ staticPasswords:
 
 oauth2:
   skipApprovalScreen: true
+
+claims:
+  id:
+    email: true
+    email_verified: true
+    preferred_username: true
