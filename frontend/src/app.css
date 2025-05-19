@@ -1,12 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
 
 .nyt-title{
   font-size: 32pt;
-  font-family: 'Chomsky', sans-serif;
+  font-family: 'Libre Baskerville', sans-serif;
   font-weight:normal;
   text-align: center;
   margin: 0 auto;
   white-space: nowrap; 
   width: max-content; 
+  font-weight: 500;
   }
   .header-layout{
   display: flex;

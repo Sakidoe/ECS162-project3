@@ -19,6 +19,7 @@
   let commentSidebarOpen = false;
   let activeArticleUrl = '';
   let comments = [];
+  let commentCounts: Record<string, number> = {};
   let commentInput = '';
   let replyTo: string = '';
   let replyInput: string = '';
@@ -84,6 +85,11 @@
     }
   }
 
+  async function fetchCommentCounts() {
+    const res = await fetch('http://localhost:8000/api/comments/counts');
+    commentCounts = await res.json(); // find number of comments made
+  }
+
   async function fetchUser() {
     try {
       const res = await fetch('http://localhost:8000/api/user', { credentials: 'include' });
@@ -112,6 +118,7 @@
     });
     commentInput = '';
     await loadComments();
+    await fetchCommentCounts(); // refresh comment count
   }
 
   async function submitReply(parentId: string, username: string) {
@@ -133,6 +140,7 @@
   replyInput = '';
   replyTo = '';
   await loadComments();
+  await fetchCommentCounts(); // refresh comment count
 }
 
   async function deleteComment(id: string) {
@@ -141,6 +149,7 @@
       credentials: 'include'
     });
     await loadComments();
+    await fetchCommentCounts(); // refresh comment count
   }
 
   async function saveEditComment(id: string) {
@@ -154,6 +163,7 @@
     editingCommentId = '';
     editingContent = '';
     await loadComments();
+    await fetchCommentCounts(); // refresh comment count 
   }
 
   function logout() {
@@ -163,6 +173,7 @@
   onMount(async () => {
     await fetchUser();
     await fetchNews();
+    await fetchCommentCounts(); // Load counts
   });
 </script>
 
@@ -195,20 +206,42 @@
     <p class="error">{errorMsg}</p>
   {:else}
     {#each [0,1,2,3,4,5] as i}
-      <div class={panelClass(i)}>
+      <div class={panelClass(i)} style="position: relative;">
         {#if articles[i]}
-          {#if articles[i].multimedia && articles[i].multimedia.length > 0}
-            {#each articles[i].multimedia as media}
-              {#if media.subtype === 'xlarge' || media.subtype === 'thumbnail'}
-                <img src={"https://www.nytimes.com/" + media.url} alt={articles[i].headline.main} width="100%" />
-                {@html ''}
-              {/if}
-            {/each}
+          <!-- Updated Image Handling -->
+          {#if articles[i].multimedia}
+            {#if articles[i].multimedia.default}
+              <img 
+                src={articles[i].multimedia.default.url} 
+                alt={articles[i].multimedia.caption || articles[i].headline.main} 
+                width="100%"
+                class="article-image"
+                on:error={(e) => e.target.style.display = 'none'}
+              />
+            {:else if articles[i].multimedia.thumbnail}
+              <img 
+                src={articles[i].multimedia.thumbnail.url} 
+                alt={articles[i].multimedia.caption || articles[i].headline.main} 
+                width="100%"
+                class="article-image"
+              />
+            {:else}
+              <div class="image-placeholder">📰</div>
+            {/if}
+          {:else}
+            <div class="image-placeholder">📰</div>
           {/if}
+          
           <h1>{articles[i].headline.main}</h1>
           <p>{articles[i].snippet}</p>
           <a class="read-more" href={articles[i].web_url} target="_blank">Continue reading →</a>
-          <button on:click={() => openComments(articles[i].web_url)}>💬 Comments</button>
+          
+          <!-- Comment button -->
+          <div class="comment-button-wrapper">
+            <button class="comment-button" on:click={() => openComments(articles[i].web_url)}>
+              💬 {commentCounts[articles[i].web_url] || 0}
+            </button>
+          </div>
         {/if}
       </div>
     {/each}
@@ -219,7 +252,12 @@
 {#if commentSidebarOpen}
   <div class="sidebar sidebar-open">
     <div class="sidebar-content">
-      <h2>Comments ({comments.length})</h2>
+      <h2>
+        {#if articles.find(a => a.web_url === activeArticleUrl)}
+          {articles.find(a => a.web_url === activeArticleUrl).headline.main}
+        {/if}
+      </h2>
+      <p>{comments.length} Comment{comments.length === 1 ? '' : 's'}</p>
       {#if userEmail}
         <textarea bind:value={commentInput} placeholder="Share your thoughts..." rows="3"></textarea>
         <button on:click={submitComment}>Post</button>
@@ -377,4 +415,27 @@
   .logout-btn:hover {
     background-color: #e74c3c;
   }
+
+  .comment-button-wrapper {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  }
+
+.comment-button {
+  background-color: white;
+  color: #444;
+  border: 1px solid #aaa;
+  border-radius: 999px;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: background 0.2s;
+  }
+
+.comment-button:hover {
+  background-color: #f0f0f0;
+  } 
+
 </style>

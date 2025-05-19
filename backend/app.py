@@ -120,6 +120,18 @@ def edit_comment(comment_id):
         {"$set": {"content": new_content}}
     )
     return jsonify({"message": "Comment updated"}), 200
+# helper function to retrive comment count
+@app.route('/api/comments/counts', methods=['GET'])
+def get_comment_counts():
+    """Returns comment counts for all articles."""
+    pipeline = [
+        {"$group": {
+            "_id": "$article_url",
+            "count": {"$sum": 1}
+        }}
+    ]
+    counts = list(comments_collection.aggregate(pipeline))
+    return jsonify({item["_id"]: item["count"] for item in counts})
 
 @app.route('/')
 def home():
